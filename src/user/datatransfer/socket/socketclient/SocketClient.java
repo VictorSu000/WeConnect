@@ -1,4 +1,4 @@
-package user.datatransfer.socket;
+package user.datatransfer.socket.socketclient;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -19,7 +19,7 @@ abstract class SocketClient {
      * @param ip The ip address to be connected.
      * @param port The port to be connected.
      */
-    public SocketClient(String ip, int port) {
+    SocketClient(String ip, int port) {
         this.IP = ip;
         this.PORT = port;
     }
@@ -41,7 +41,7 @@ abstract class SocketClient {
      * This method should be called if the socket is not to be used anymore.
      * @throws IOException if closing streams and socket failed.
      */
-    public void dispose() throws IOException {
+    public void close() throws IOException {
         inStream.close();
         outStream.close();
         socket.close();
@@ -65,6 +65,6 @@ abstract class SocketClient {
     private final String IP;
     private final int PORT;
     private Socket socket;
-    private BufferedInputStream inStream = null;
-    private BufferedOutputStream outStream = null;
+    BufferedInputStream inStream = null;
+    BufferedOutputStream outStream = null;
 }
