@@ -6,9 +6,9 @@ import java.io.IOException;
 import java.net.Socket;
 
 /**
- * Created by Victor on 2017/4/30.
- *
- * This is a abstract class for sockets in client.
+ * Created by Victor on 2017/4/30.<br>
+ *<br>
+ * This is a abstract class for sockets in client.<br>
  * This class specify the most fundamental elements of a socket for clients, including the basic methods,
  * connecting to the server and how to dispose the socket if it's no longer to be used.
  */
