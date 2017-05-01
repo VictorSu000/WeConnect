@@ -18,7 +18,7 @@ class SocketClientRead extends SocketClient implements SocketReadable{
      * Each time calling this method, a piece of message will be completely received and saved in a piped stream.
      * So if transferring huge amounts of data at a time, for example, transferring a large file,
      * a lot of computer resources will be cost.
-     * @return an integer converted from one byte.
+     * @return All of the raw data in a stream, including the string of length and the data.
      * @throws IOException  if this input stream has been closed, or an I/O error occurs.
      */
     public PipedOutputStream read() throws IOException{
