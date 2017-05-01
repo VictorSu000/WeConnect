@@ -72,7 +72,7 @@ public class SocketReadThread implements Runnable{
         }
     }
 
-    private SocketReadable socketRead;
+    private final SocketReadable socketRead;
     private HandleReadingMessage handle;
     private boolean running = true;
 

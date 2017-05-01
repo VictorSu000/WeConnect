@@ -49,6 +49,6 @@ public class Message {
     }
 
     private final BigInteger length;
-    private InputStream inStream;
+    private final InputStream inStream;
 
 }

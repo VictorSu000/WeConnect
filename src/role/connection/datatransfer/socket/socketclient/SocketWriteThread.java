@@ -3,7 +3,6 @@ package role.connection.datatransfer.socket.socketclient;
 import role.Message;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 
@@ -38,7 +37,7 @@ public class SocketWriteThread implements Runnable {
      * @param messageToWrite the message to be sent
      * @return true means everything's ok, false means there's already a message being sent, please wait till it's finished.
      */
-    public boolean setmessageToWrite(Message messageToWrite) {
+    public boolean setMessageToWrite(Message messageToWrite) {
         if (this.messageToWrite == null) {
             this.messageToWrite = messageToWrite;
             return true;
@@ -117,7 +116,7 @@ public class SocketWriteThread implements Runnable {
         }
     }
 
-    private SocketWritable socketWrite;
+    private final SocketWritable socketWrite;
     private boolean running = true;
     private boolean beginWriting = false;
     private Message messageToWrite;
