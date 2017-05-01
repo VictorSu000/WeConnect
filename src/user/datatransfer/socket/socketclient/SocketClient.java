@@ -15,22 +15,12 @@ import java.net.Socket;
 abstract class SocketClient {
 
     /**
-     * Constructor.
-     * @param ip The ip address to be connected.
-     * @param port The port to be connected.
-     */
-    SocketClient(String ip, int port) {
-        this.IP = ip;
-        this.PORT = port;
-    }
-
-    /**
      * This method is used to connect to the server. After creating a socket and the streams for reading and writing,
      * it will call a private method checkConnection() to make sure the connection is established.
      * @return true for successfully establishing connection . false for failure.
-     * @throws IOException if connection error happens.
+     * @throws IOException if an I/O error occurs when creating the socket or creating the streams.
      */
-    public boolean connect() throws IOException {
+    boolean connect() throws IOException {
         socket = new Socket(IP, PORT);
         inStream = new BufferedInputStream(socket.getInputStream());
         outStream = new BufferedOutputStream(socket.getOutputStream());
@@ -41,13 +31,34 @@ abstract class SocketClient {
      * This method should be called if the socket is not to be used anymore.
      * @throws IOException if closing streams and socket failed.
      */
-    public void close() throws IOException {
-        inStream.close();
-        outStream.close();
-        socket.close();
+    void close() throws IOException {
+        if (inStream != null) {
+            inStream.close();
+        }
+        if (outStream != null) {
+            outStream.close();
+        }
+        if (socket != null) {
+            socket.close();
+        }
         inStream = null;
         outStream = null;
         socket = null;
+    }
+
+    BufferedInputStream inStream = null;
+    BufferedOutputStream outStream = null;
+
+    /**
+     * Constructor.
+     * @param ip The ip address to be connected.
+     * @param port The port to be connected.
+     * @param socketType The socketType ("read" or "write")
+     */
+    SocketClient(String ip, int port, String socketType) {
+        this.IP = ip;
+        this.PORT = port;
+        this.socketType = socketType;
     }
 
     /**
@@ -57,7 +68,7 @@ abstract class SocketClient {
      */
     private boolean checkConnection() throws IOException {
         final int CONNECT_OK = 1;
-        outStream.write("Connecting.".getBytes());
+        outStream.write(("Connecting." + socketType).getBytes());
         outStream.flush();
         return inStream.read() == CONNECT_OK;
     }
@@ -65,6 +76,5 @@ abstract class SocketClient {
     private final String IP;
     private final int PORT;
     private Socket socket;
-    BufferedInputStream inStream = null;
-    BufferedOutputStream outStream = null;
+    private final String socketType;
 }
