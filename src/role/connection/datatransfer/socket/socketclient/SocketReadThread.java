@@ -1,6 +1,6 @@
 package role.connection.datatransfer.socket.socketclient;
 
-import role.InputMessage;
+import role.Message;
 
 import java.io.IOException;
 import java.io.PipedInputStream;
@@ -36,7 +36,7 @@ public class SocketReadThread implements Runnable{
     /**
      * This method is calling in multithreading.
      * In this method, this thread continuously calls the read() method from SocketReadable,
-     * fetches a stream of a complete piece of message, pack it as an instance of class InputMessage,
+     * fetches a stream of a complete piece of message, pack it as an instance of class Message,
      * and then give it to HandleReadingMessage to handle it.
      */
     @Override
@@ -48,7 +48,7 @@ public class SocketReadThread implements Runnable{
                 while((c = (char) in.read()) != '-') {
                     lengthStr.append(c);
                 }
-                handle.handleMsg(new InputMessage(new BigInteger(lengthStr.toString()), in));
+                handle.handleMsg(new Message(new BigInteger(lengthStr.toString()), in));
             } catch (IOException e) {
                 System.out.println("Unexpected Exception happens when running thread to receive data.");
                 System.out.println("Error message: " + e.getMessage());
