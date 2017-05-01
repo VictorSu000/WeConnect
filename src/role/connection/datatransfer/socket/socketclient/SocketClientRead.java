@@ -1,4 +1,4 @@
-package user.datatransfer.socket.socketclient;
+package role.connection.datatransfer.socket.socketclient;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -38,6 +38,24 @@ class SocketClientRead extends SocketClient implements SocketReadable{
             returnStream.write(inStream.read());
         }
         return returnStream;
+    }
+
+    /**
+     * Close this socket and the related streams.
+     * @throws IOException if closing streams and socket failed.
+     */
+    @Override
+    public void close() throws IOException {
+        super.close();
+    }
+
+    /**
+     * Connect to the server and try to check whether the connection is successfully established.
+     * @return true for success. false for failure.
+     * @throws IOException if an I/O error occurs when creating the socket or creating the streams.
+     */
+    public boolean connect() throws IOException {
+        return super.connect();
     }
 
     /**

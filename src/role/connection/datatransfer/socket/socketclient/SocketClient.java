@@ -1,4 +1,4 @@
-package user.datatransfer.socket.socketclient;
+package role.connection.datatransfer.socket.socketclient;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;

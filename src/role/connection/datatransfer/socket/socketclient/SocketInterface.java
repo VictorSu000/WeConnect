@@ -1,4 +1,4 @@
-package user.datatransfer.socket.socketclient;
+package role.connection.datatransfer.socket.socketclient;
 
 import java.io.IOException;
 import java.io.PipedOutputStream;
@@ -10,5 +10,7 @@ import java.io.PipedOutputStream;
  */
 interface SocketReadable{
     PipedOutputStream read() throws IOException;
+    void close() throws IOException;
+    boolean connect() throws IOException;
 }
 
