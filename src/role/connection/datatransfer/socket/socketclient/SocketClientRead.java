@@ -29,11 +29,17 @@ class SocketClientRead extends SocketClient implements SocketReadable{
             // and it ends with the char '-'
             char c;
             while ((c = (char) lengthReader.read()) != '-') {
+                // Because '0' to '9' in ascii is 48 to 57 and '-' is 45, they can all be put into one byte.
+                // Thus it's safe to receive it using read() in InputStream.
                 lengthStr.append(c);
             }
         }
         BigInteger length = new BigInteger(String.valueOf(lengthStr));
         PipedOutputStream returnStream = new PipedOutputStream();
+        for (int i = 0; i < lengthStr.length(); ++i) {
+            returnStream.write(lengthStr.charAt(i));
+        }
+        returnStream.write('-');
         for (BigInteger i = new BigInteger(0 + ""); i.compareTo(length) < 0; i = i.add(new BigInteger(1 + ""))) {
             returnStream.write(inStream.read());
         }

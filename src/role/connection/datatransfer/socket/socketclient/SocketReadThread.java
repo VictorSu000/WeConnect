@@ -1,8 +1,11 @@
 package role.connection.datatransfer.socket.socketclient;
 
+import role.InputMessage;
+
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.math.BigInteger;
 
 /**
  * Created by Victor on 2017/4/30.<br>
@@ -17,7 +20,7 @@ public class SocketReadThread implements Runnable{
      * Constructor. The instance of this class will automatically manage the socket.
      * @param ip The ip address to be connected.
      * @param port The port to be connected.
-     * @param handle Specify how to handle the data received.
+     * @param handle Specify how to handle the message received.
      * @throws IOException if Socket can't be established or socket is established but transferring data failed.
      */
     public SocketReadThread(String ip, int port, HandleReadingMessage handle) throws IOException{
@@ -33,13 +36,19 @@ public class SocketReadThread implements Runnable{
     /**
      * This method is calling in multithreading.
      * In this method, this thread continuously calls the read() method from SocketReadable,
-     * fetches a stream of a complete piece of message, and the give it to HandleReadingMessage to handle it.
+     * fetches a stream of a complete piece of message, pack it as an instance of class InputMessage,
+     * and then give it to HandleReadingMessage to handle it.
      */
     @Override
     public void run() {
         while (running) {
             try(PipedOutputStream socketOut = socketRead.read(); PipedInputStream in = new PipedInputStream(socketOut)) {
-                handle.handleMsg(in);
+                char c;
+                StringBuilder lengthStr = new StringBuilder();
+                while((c = (char) in.read()) != '-') {
+                    lengthStr.append(c);
+                }
+                handle.handleMsg(new InputMessage(new BigInteger(lengthStr.toString()), in));
             } catch (IOException e) {
                 System.out.println("Unexpected Exception happens when running thread to receive data.");
                 System.out.println("Error message: " + e.getMessage());
