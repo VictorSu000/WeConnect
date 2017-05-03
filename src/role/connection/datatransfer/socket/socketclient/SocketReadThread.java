@@ -27,17 +27,19 @@ public class SocketReadThread implements Runnable{
         socketRead = new SocketClientRead(ip, port);
         if (!socketRead.connect()) {
             socketRead.close();
-            throw new IOException("Socket established but transferring data failed.");
+            throw new IOException("Socket establishing failed.");
         }
         this.handle = handle;
         running = true;
     }
 
     /**
-     * This method is calling in multithreading.
+     * This method is called in multithreading.
      * In this method, this thread continuously calls the read() method from SocketReadable,
      * fetches a stream of a complete piece of message, pack it as an instance of class Message,
      * and then give it to HandleReadingMessage to handle it.
+     * Note: in HandleReadingMessage, the message doesn't need to be disposed of,
+     * for in this method, stream in can be closed automatically.
      */
     @Override
     public void run() {
@@ -48,11 +50,17 @@ public class SocketReadThread implements Runnable{
                 while((c = (char) in.read()) != '-') {
                     lengthStr.append(c);
                 }
-                handle.handleMsg(new Message(new BigInteger(lengthStr.toString()), in));
+                synchronized (handle) {
+                    handle.handleMsg(new Message(new BigInteger(lengthStr.toString()), in));
+                }
             } catch (IOException e) {
-                System.out.println("Unexpected Exception happens when running thread to receive data.");
-                System.out.println("Error message: " + e.getMessage());
-                // TODO: use logger.
+                if (running) {
+                    System.out.println("Unexpected Exception happens when running thread to receive data.");
+                    System.out.println("Maybe the socket is closed unexpectedly.");
+                    e.printStackTrace();
+                    close();
+                    // TODO: use logger.
+                }
             }
         }
 
@@ -60,20 +68,23 @@ public class SocketReadThread implements Runnable{
 
     /**
      * In this method close the socket and this thread.
+     * Attention here, if this thread is reading messages and close() is called at the same time,
+     * socket will be closed and those messages can't be received correctly.
      */
-    public void close() {
+    synchronized public void close() {
+        // Must set running false before close socketRead, because run() method is still trying to fetch data and
+        // an exception will be thrown if socketRead is closed. Only when running is false won't that exception be logged.
         running = false;
         try {
             socketRead.close();
         } catch (IOException e) {
             System.out.println("Unexpected Exception happens when closing a socket for reading");
-            System.out.println("Error message: " + e.getMessage());
+            e.printStackTrace();
             // TODO: use logger.
         }
     }
 
     private final SocketReadable socketRead;
-    private HandleReadingMessage handle;
-    private boolean running = true;
-
+    private final HandleReadingMessage handle;
+    volatile private boolean running = true;
 }

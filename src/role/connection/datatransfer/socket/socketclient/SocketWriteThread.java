@@ -5,14 +5,15 @@ import role.Message;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.math.BigInteger;
 
 /**
  * Created by Victor on 2017/5/1.<br>
  * <br>
  * This class is aim to send data to the socket with multithreading.
- * And it manage the creation and the disposal of that socket and the InputStream.
+ * And it manage the creation and the disposal of that socket and the message.
  * So client just need to give an instance of Message and a starting signal,
- * and then it will finish the other work.
+ * and then it will finish the other work. Afterwards, that message will be disposed of correctly.
  */
 public class SocketWriteThread implements Runnable {
 
@@ -26,7 +27,7 @@ public class SocketWriteThread implements Runnable {
         socketWrite = new SocketClientWrite(ip, port);
         if (!socketWrite.connect()) {
             socketWrite.close();
-            throw new IOException("Socket established but transferring data failed.");
+            throw new IOException("Socket establishing failed.");
         }
         running = true;
         beginWriting = false;
@@ -37,7 +38,7 @@ public class SocketWriteThread implements Runnable {
      * @param messageToWrite the message to be sent
      * @return true means everything's ok, false means there's already a message being sent, please wait till it's finished.
      */
-    public boolean setMessageToWrite(Message messageToWrite) {
+    synchronized public boolean setMessageToWrite(Message messageToWrite) {
         if (this.messageToWrite == null) {
             this.messageToWrite = messageToWrite;
             return true;
@@ -50,7 +51,7 @@ public class SocketWriteThread implements Runnable {
      * Calling this method means the sending should be started.
      * @return true means everything's ok, false means there's already a message being sent, please wait till it's finished.
      */
-    public boolean beginToWrite() {
+    synchronized public boolean beginToWrite() {
         if (!beginWriting) {
             beginWriting = true;
             return true;
@@ -68,11 +69,21 @@ public class SocketWriteThread implements Runnable {
         // use running to make sure that the thread will survive
         while (running) {
             // use beginWriting to control the time to write message to the remote
-            while (beginWriting) {
+            if (beginWriting) {
                 write();
                 messageToWrite.dispose();
                 beginWriting = false;
                 messageToWrite = null;
+            }
+            if (stopSignal) {
+                running = false;
+                try {
+                    socketWrite.close();
+                } catch (IOException e) {
+                    System.out.println("Unexpected Exception happens when closing a socket for reading");
+                    e.printStackTrace();
+                    // TODO: use logger.
+                }
             }
         }
 
@@ -81,15 +92,11 @@ public class SocketWriteThread implements Runnable {
     /**
      * In this method close the socket and this thread.
      */
-    public void close() {
-        running = false;
-        try {
-            socketWrite.close();
-        } catch (IOException e) {
-            System.out.println("Unexpected Exception happens when closing a socket for reading");
-            System.out.println("Error message: " + e.getMessage());
-            // TODO: use logger.
-        }
+    synchronized public void close() {
+        // Use stop signal here and don't do any real closing work to avoid waiting in the thread which tries to stop
+        // another thread. And also, in this way real stopping will be delayed till everything is finished.
+        // Real stopping work is done in THIS thread itself (SocketWriteThread) in run() method.
+        stopSignal = true;
     }
 
     /**
@@ -105,19 +112,32 @@ public class SocketWriteThread implements Runnable {
             // write the separator
             out.write('-');
             int b;
-            while ((b = messageToWrite.getInStream().read()) != -1) {
+            BigInteger length = messageToWrite.getLength();
+            // don't use (b = messageToWrite.getInStream().read())!=-1 here.
+            // if client use "try" to create a piped stream and doesn't close it manually,
+            // messageToWrite.getInStream().read() won't receive -1.
+            for (BigInteger i = new BigInteger("0"); i.compareTo(length) < 0; i = i.add(new BigInteger("1"))) {
+                b = messageToWrite.getInStream().read();
                 out.write(b);
+            }
+            // Close "out" to make sure stream "in" can receive an ending and in.read()!=-1 can be used.
+            try {
+                out.close();
+            } catch (IOException e) {
+                System.out.println("Closing temp PipedOutputSteam failed in writing data to the remote.");
+                e.printStackTrace();
             }
             socketWrite.write(in);
         } catch (IOException e) {
             System.out.println("Unexpected Exception happens when trying to append length data to the stream.");
-            System.out.println("Error message: " + e.getMessage());
+            e.printStackTrace();
             // TODO: use logger.
         }
     }
 
     private final SocketWritable socketWrite;
-    private boolean running = true;
-    private boolean beginWriting = false;
-    private Message messageToWrite;
+    volatile private boolean running = true;
+    volatile private boolean beginWriting = false;
+    volatile private Message messageToWrite;
+    volatile private boolean stopSignal = false;
 }

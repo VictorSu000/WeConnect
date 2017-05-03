@@ -31,10 +31,9 @@ public class Message {
         {
             try {
                 inStream.close();
-            } catch (IOException e)
-            {
+            } catch (IOException e) {
                 System.out.println("Unexpected error happens when trying to close inStream in Message.");
-                System.out.println("Error message" + e.getMessage());
+                e.printStackTrace();
                 // TODO: use logger
             }
         }
