@@ -51,7 +51,9 @@ public class SocketReadThread implements Runnable{
                     lengthStr.append(c);
                 }
                 synchronized (handle) {
-                    handle.handleMsg(new Message(new BigInteger(lengthStr.toString()), in));
+                    Message msg = new Message(new BigInteger(lengthStr.toString()), in);
+                    handle.handleMsg(msg);
+                    msg.dispose();
                 }
             } catch (IOException e) {
                 if (running) {
