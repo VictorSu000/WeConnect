@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.math.BigInteger;
+import java.util.LinkedList;
+import java.util.Queue;
 
 /**
  * Created by Victor on 2017/5/1.<br>
@@ -30,34 +32,17 @@ public class SocketWriteThread implements Runnable {
             throw new IOException("Socket establishing failed.");
         }
         running = true;
-        beginWriting = false;
     }
 
     /**
      * Set the message with data that is going to be written to the remote.
+     * Attention: One message should only be given to one thread. If you want to send another message, please new one.
+     * And also, please use new stream in the message.
      * @param messageToWrite the message to be sent
-     * @return true means everything's ok, false means there's already a message being sent, please wait till it's finished.
+     * @return true if successfully add the message to message queue, false if fail to do so.
      */
     synchronized public boolean setMessageToWrite(Message messageToWrite) {
-        if (this.messageToWrite == null) {
-            this.messageToWrite = messageToWrite;
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * Calling this method means the sending should be started.
-     * @return true means everything's ok, false means there's already a message being sent, please wait till it's finished.
-     */
-    synchronized public boolean beginToWrite() {
-        if (!beginWriting) {
-            beginWriting = true;
-            return true;
-        } else {
-            return false;
-        }
+        return messageToWriteQueue.offer(messageToWrite);
     }
 
     /**
@@ -69,11 +54,21 @@ public class SocketWriteThread implements Runnable {
         // use running to make sure that the thread will survive
         while (running) {
             // use beginWriting to control the time to write message to the remote
-            if (beginWriting) {
-                write();
-                messageToWrite.dispose();
-                beginWriting = false;
-                messageToWrite = null;
+            boolean msgQueueEmpty;
+            synchronized (this) {
+                msgQueueEmpty = messageToWriteQueue.isEmpty();
+            }
+            // use while to make sure before checking stopSignal, all the messages have been sent.
+            while (!msgQueueEmpty) {
+                Message msg;
+                synchronized (this){
+                    msg = messageToWriteQueue.poll();
+                }
+                write(msg);
+                msg.dispose();
+                synchronized (this) {
+                    msgQueueEmpty = messageToWriteQueue.isEmpty();
+                }
             }
             if (stopSignal) {
                 running = false;
@@ -103,21 +98,25 @@ public class SocketWriteThread implements Runnable {
      * This method changes the message to a stream and adds the length message at the same time.
      * Then it sends those data.
      */
-    private void write() {
+    private void write(Message msg) {
+        if (msg.getInStream() == null) {
+            System.out.println("Error: message is null! Maybe this message was given to different threads at the same time.");
+            return;
+        }
         try(PipedOutputStream out = new PipedOutputStream(); PipedInputStream in = new PipedInputStream(out)) {
-            String lengthStr = messageToWrite.getLength().toString();
+            String lengthStr = msg.getLength().toString();
             for (int i = 0; i < lengthStr.length(); ++i) {
                 out.write(lengthStr.charAt(i));
             }
             // write the separator
             out.write('-');
             int b;
-            BigInteger length = messageToWrite.getLength();
+            BigInteger length = msg.getLength();
             // don't use (b = messageToWrite.getInStream().read())!=-1 here.
             // if client use "try" to create a piped stream and doesn't close it manually,
             // messageToWrite.getInStream().read() won't receive -1.
             for (BigInteger i = new BigInteger("0"); i.compareTo(length) < 0; i = i.add(new BigInteger("1"))) {
-                b = messageToWrite.getInStream().read();
+                b = msg.getInStream().read();
                 out.write(b);
             }
             // Close "out" to make sure stream "in" can receive an ending and in.read()!=-1 can be used.
@@ -135,9 +134,8 @@ public class SocketWriteThread implements Runnable {
         }
     }
 
-    private final SocketWritable socketWrite;
+    final private SocketWritable socketWrite;
     volatile private boolean running = true;
-    volatile private boolean beginWriting = false;
-    volatile private Message messageToWrite;
+    final private Queue<Message> messageToWriteQueue = new LinkedList<>();
     volatile private boolean stopSignal = false;
 }
