@@ -2,7 +2,7 @@ package role.connection.datatransfer.socket.socketclient;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PipedOutputStream;
+import java.io.PipedInputStream;
 
 /**
  * Created by Victor on 2017/5/1.<br>
@@ -10,7 +10,7 @@ import java.io.PipedOutputStream;
  * Implement this interface means it's a socket which can be read to receive data.
  */
 interface SocketReadable {
-    PipedOutputStream read() throws IOException;
+    PipedInputStream read() throws IOException;
     void close() throws IOException;
     boolean connect() throws IOException;
 }

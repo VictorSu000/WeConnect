@@ -2,6 +2,7 @@ package role.connection.datatransfer.socket.socketclient;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.math.BigInteger;
 
@@ -21,29 +22,30 @@ class SocketClientRead extends SocketClient implements SocketReadable{
      * @return All of the raw data in a stream, including the string of length and the data.
      * @throws IOException  if this input stream has been closed, or an I/O error occurs.
      */
-    public PipedOutputStream read() throws IOException{
+    public PipedInputStream read() throws IOException{
         StringBuilder lengthStr;
-        try(InputStreamReader lengthReader = new InputStreamReader(inStream)) {
-            lengthStr = new StringBuilder();
-            // Read the length of the message. The length is transferred in the beginning of the message as string,
-            // and it ends with the char '-'
-            char c;
-            while ((c = (char) lengthReader.read()) != '-') {
-                // Because '0' to '9' in ascii is 48 to 57 and '-' is 45, they can all be put into one byte.
-                // Thus it's safe to receive it using read() in InputStream.
-                lengthStr.append(c);
-            }
+        lengthStr = new StringBuilder();
+        // Read the length of the message. The length is transferred in the beginning of the message as string,
+        // and it ends with the char '-'
+        char c;
+        while ((c = (char) inStream.read()) != '-') {
+            // Because '0' to '9' in ascii is 48 to 57 and '-' is 45, they can all be put into one byte.
+            // Thus it's safe to receive it using read() in InputStream.
+            lengthStr.append(c);
         }
         BigInteger length = new BigInteger(String.valueOf(lengthStr));
-        PipedOutputStream returnStream = new PipedOutputStream();
-        for (int i = 0; i < lengthStr.length(); ++i) {
-            returnStream.write(lengthStr.charAt(i));
+        PipedInputStream returnStream = new PipedInputStream();
+        try (PipedOutputStream out = new PipedOutputStream()) {
+             returnStream.connect(out);
+            for (int i = 0; i < lengthStr.length(); ++i) {
+                out.write(lengthStr.charAt(i));
+            }
+            out.write('-');
+            for (BigInteger i = new BigInteger(0 + ""); i.compareTo(length) < 0; i = i.add(new BigInteger(1 + ""))) {
+                out.write(inStream.read());
+            }
+            out.flush();
         }
-        returnStream.write('-');
-        for (BigInteger i = new BigInteger(0 + ""); i.compareTo(length) < 0; i = i.add(new BigInteger(1 + ""))) {
-            returnStream.write(inStream.read());
-        }
-        returnStream.flush();
         return returnStream;
     }
 

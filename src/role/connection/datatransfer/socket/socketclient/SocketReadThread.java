@@ -4,7 +4,6 @@ import role.Message;
 
 import java.io.IOException;
 import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
 import java.math.BigInteger;
 
 /**
@@ -44,14 +43,14 @@ public class SocketReadThread implements Runnable{
     @Override
     public void run() {
         while (running) {
-            try(PipedOutputStream socketOut = socketRead.read(); PipedInputStream in = new PipedInputStream(socketOut)) {
+            try(PipedInputStream socketIn = socketRead.read()) {
                 char c;
                 StringBuilder lengthStr = new StringBuilder();
-                while((c = (char) in.read()) != '-') {
+                while((c = (char) socketIn.read()) != '-') {
                     lengthStr.append(c);
                 }
                 synchronized (handle) {
-                    Message msg = new Message(new BigInteger(lengthStr.toString()), in);
+                    Message msg = new Message(new BigInteger(lengthStr.toString()), socketIn);
                     handle.handleMsg(msg);
                     msg.dispose();
                 }
