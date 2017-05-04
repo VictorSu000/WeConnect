@@ -38,7 +38,7 @@ public class SocketReadThread implements Runnable{
      * fetches a stream of a complete piece of message, pack it as an instance of class Message,
      * and then give it to HandleReadingMessage to handle it.
      * Note: in HandleReadingMessage, the message doesn't need to be disposed of,
-     * for in this method, stream in can be closed automatically.
+     * because this work has been done in this method.
      */
     @Override
     public void run() {
