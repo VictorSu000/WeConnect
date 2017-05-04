@@ -32,6 +32,7 @@ public class Message {
             for (BigInteger i = new BigInteger("0"); i.compareTo(this.length) < 0; i = i.add(new BigInteger("1"))) {
                 b = in.read();
                 out.write(b);
+                out.flush();
             }
         } catch (IOException e) {
             System.out.println("Copying stream to create an instance of Message failed");

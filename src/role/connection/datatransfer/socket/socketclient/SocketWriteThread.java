@@ -119,6 +119,7 @@ public class SocketWriteThread implements Runnable {
                 b = msg.getInStream().read();
                 out.write(b);
             }
+            out.flush();
             // Close "out" to make sure stream "in" can receive an ending and in.read()!=-1 can be used.
             try {
                 out.close();

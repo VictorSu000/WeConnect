@@ -43,6 +43,7 @@ class SocketClientRead extends SocketClient implements SocketReadable{
         for (BigInteger i = new BigInteger(0 + ""); i.compareTo(length) < 0; i = i.add(new BigInteger(1 + ""))) {
             returnStream.write(inStream.read());
         }
+        returnStream.flush();
         return returnStream;
     }
 
