@@ -30,7 +30,7 @@ public class DataTransferPair implements IConnection{
      * @param extension_name The name of the extension which created this socket.
      * @throws IOException if connection failed.
      */
-    public DataTransferPair(String ip, int port, HandleReadingMessage handle, String role_id, String extension_name)
+    public DataTransferPair(String ip, int port, String role_id, String extension_name, HandleReadingMessage handle)
             throws IOException {
         this.handle = handle;
         PAIR_HASH = (new Random()).nextInt();

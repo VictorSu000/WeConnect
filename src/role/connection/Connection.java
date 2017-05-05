@@ -22,7 +22,7 @@ public class Connection implements IConnection{
      * @param role_id The id of the current client.
      * @param extension_name The name of the extension which created this socket.
      */
-    public Connection(String ip, int port, HandleReadingMessage handle, String role_id, String extension_name) {
+    public Connection(String ip, int port, String role_id, String extension_name, HandleReadingMessage handle) {
         IP = ip;
         PORT = port;
         ROLE_ID = role_id;
@@ -39,7 +39,7 @@ public class Connection implements IConnection{
     @Override
     public boolean write(Message msg) throws IOException{
         if (dataTransferPair == null) {
-            dataTransferPair = new DataTransferPair(IP, PORT, handle, ROLE_ID, EXTENSION_NAME);
+            dataTransferPair = new DataTransferPair(IP, PORT, ROLE_ID, EXTENSION_NAME, handle);
         }
         return dataTransferPair.write(msg);
     }
