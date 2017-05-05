@@ -16,6 +16,7 @@ class SocketClientWrite extends SocketClient implements SocketWritable {
      * @param in The Stream that stores all the data to be sent
      * @throws IOException  if this input stream has been closed, or an I/O error occurs.
      */
+    @Override
     public void write(InputStream in) throws IOException {
         int d;
         while ((d = in.read()) != -1) {
@@ -38,6 +39,7 @@ class SocketClientWrite extends SocketClient implements SocketWritable {
      * @return true for success. false for failure.
      * @throws IOException if an I/O error occurs when creating the socket or creating the streams.
      */
+    @Override
     public boolean connect() throws IOException {
         return super.connect();
     }

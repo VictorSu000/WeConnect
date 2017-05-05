@@ -32,6 +32,7 @@ public class Connection implements IConnection{
      * @param msg An instance of Message. It contains the message to be written.
      * @throws IOException if setting up real connection failed.
      */
+    @Override
     public boolean write(Message msg) throws IOException{
         if (dataTransferPair == null) {
             dataTransferPair = new DataTransferPair(IP, PORT, handle);
@@ -42,6 +43,7 @@ public class Connection implements IConnection{
     /**
      * Closing the connection.
      */
+    @Override
     public void close() {
         if (dataTransferPair != null) {
             dataTransferPair.close();

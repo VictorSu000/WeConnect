@@ -38,6 +38,7 @@ public class DataTransferPair implements IConnection{
      * Write messages to the remote.
      * @param msg An instance of Message. It contains the message to be written.
      */
+    @Override
     public boolean write(Message msg) {
         return sWrite.setMessageToWrite(msg);
     }
@@ -45,6 +46,7 @@ public class DataTransferPair implements IConnection{
     /**
      * Close the connection, or, the pair of sockets.
      */
+    @Override
     public void close() {
         sRead.close();
         sWrite.close();
