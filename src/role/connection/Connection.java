@@ -2,7 +2,6 @@ package role.connection;
 
 import role.Message;
 import role.connection.datatransfer.DataTransferPair;
-import role.connection.datatransfer.socket.socketclient.HandleReadingMessage;
 
 import java.io.IOException;
 
@@ -27,17 +26,11 @@ public class Connection implements IConnection{
         this.handle = handle;
     }
 
-    public void write(Message msg) {
+    public boolean write(Message msg) throws IOException{
         if (dataTransferPair == null) {
-            try {
-                dataTransferPair = new DataTransferPair(IP, PORT, handle);
-            } catch (IOException e) {
-                System.out.println("Cannot create DataTransferPair");
-                e.printStackTrace();
-                // TODO: fix exception. throw it.
-            }
+            dataTransferPair = new DataTransferPair(IP, PORT, handle);
         }
-        dataTransferPair.write(msg);
+        return dataTransferPair.write(msg);
     }
 
     public void close() {
@@ -48,6 +41,6 @@ public class Connection implements IConnection{
 
     final private String IP;
     final private int PORT;
-    private HandleReadingMessage handle;
+    final private HandleReadingMessage handle;
     private DataTransferPair dataTransferPair = null;
 }

@@ -2,7 +2,7 @@ package role.connection.datatransfer;
 
 import role.Message;
 import role.connection.IConnection;
-import role.connection.datatransfer.socket.socketclient.HandleReadingMessage;
+import role.connection.HandleReadingMessage;
 import role.connection.datatransfer.socket.socketclient.SocketReadThread;
 import role.connection.datatransfer.socket.socketclient.SocketWriteThread;
 
@@ -38,8 +38,8 @@ public class DataTransferPair implements IConnection{
      * Write messages to the remote.
      * @param msg An instance of Message. It contains the message to be written.
      */
-    public void write(Message msg) {
-        sWrite.setMessageToWrite(msg);
+    public boolean write(Message msg) {
+        return sWrite.setMessageToWrite(msg);
     }
 
     /**
@@ -65,7 +65,7 @@ public class DataTransferPair implements IConnection{
 
     private SocketReadThread sRead;
     private SocketWriteThread sWrite;
-    private HandleReadingMessage handle;
+    final private HandleReadingMessage handle;
     final private String IP;
     final private int PORT;
 }

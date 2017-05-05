@@ -1,6 +1,7 @@
 package role.connection.datatransfer.socket.socketclient;
 
 import role.Message;
+import role.connection.HandleReadingMessage;
 
 import java.io.IOException;
 import java.io.PipedInputStream;
@@ -57,7 +58,7 @@ public class SocketReadThread implements Runnable{
             } catch (IOException e) {
                 if (running) {
                     System.out.println("Unexpected Exception happens when running thread to receive data.");
-                    System.out.println("Maybe the socket is closed unexpectedly.");
+                    System.out.println("Maybe the socket is closed unexpectedly. Or creating or disposing of message failed.");
                     e.printStackTrace();
                     close();
                     // TODO: use logger.

@@ -2,6 +2,8 @@ package role.connection;
 
 import role.Message;
 
+import java.io.IOException;
+
 /**
  * Created by Victor on 2017/5/5.<br>
  * <br>
@@ -9,6 +11,6 @@ import role.Message;
  * Complementing this interface means it can write messages and (should be able to) read messages with HandleReadingMessage.
  */
 public interface IConnection {
-    void write(Message msg);
+    boolean write(Message msg) throws IOException;
     void close();
 }

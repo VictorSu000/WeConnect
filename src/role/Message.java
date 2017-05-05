@@ -21,7 +21,7 @@ public class Message {
      * @param length The length of the data.
      * @param in The InputStream of all the data.
      */
-    public Message(BigInteger length, InputStream in) {
+    public Message(BigInteger length, InputStream in) throws IOException{
         this.length = length;
         int b;
         PipedInputStream inStream = new PipedInputStream();
@@ -34,10 +34,6 @@ public class Message {
                 out.write(b);
                 out.flush();
             }
-        } catch (IOException e) {
-            System.out.println("Copying stream to create an instance of Message failed");
-            e.printStackTrace();
-            // TODO: use logger
         }
         this.inStream = inStream;
     }
@@ -46,16 +42,10 @@ public class Message {
      * Close this message's InputStream when it's not to be used.
      * This method should be called if the message is no longer to be used.
      */
-    public void dispose() {
+    public void dispose() throws IOException{
         if (inStream != null)
         {
-            try {
-                inStream.close();
-            } catch (IOException e) {
-                System.out.println("Unexpected error happens when trying to close inStream in Message.");
-                e.printStackTrace();
-                // TODO: use logger
-            }
+            inStream.close();
         }
     }
 

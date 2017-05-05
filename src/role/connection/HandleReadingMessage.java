@@ -1,4 +1,4 @@
-package role.connection.datatransfer.socket.socketclient;
+package role.connection;
 
 import role.Message;
 

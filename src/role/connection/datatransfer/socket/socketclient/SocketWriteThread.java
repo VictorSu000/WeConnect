@@ -65,7 +65,12 @@ public class SocketWriteThread implements Runnable {
                     msg = messageToWriteQueue.poll();
                 }
                 write(msg);
-                msg.dispose();
+                try {
+                    msg.dispose();
+                } catch (IOException e) {
+                    System.out.println("Disposing message failed. An I/O error happened.");
+                    e.printStackTrace();
+                }
                 synchronized (this) {
                     msgQueueEmpty = messageToWriteQueue.isEmpty();
                 }
