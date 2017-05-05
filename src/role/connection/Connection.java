@@ -19,10 +19,14 @@ public class Connection implements IConnection{
      * @param ip The ip address to connect to.
      * @param port The remote port.
      * @param handle Specify how to handle the messages from the remote.
+     * @param role_id The id of the current client.
+     * @param extension_name The name of the extension which created this socket.
      */
-    public Connection(String ip, int port, HandleReadingMessage handle) {
+    public Connection(String ip, int port, HandleReadingMessage handle, String role_id, String extension_name) {
         IP = ip;
         PORT = port;
+        ROLE_ID = role_id;
+        EXTENSION_NAME = extension_name;
         this.handle = handle;
     }
 
@@ -35,7 +39,7 @@ public class Connection implements IConnection{
     @Override
     public boolean write(Message msg) throws IOException{
         if (dataTransferPair == null) {
-            dataTransferPair = new DataTransferPair(IP, PORT, handle);
+            dataTransferPair = new DataTransferPair(IP, PORT, handle, ROLE_ID, EXTENSION_NAME);
         }
         return dataTransferPair.write(msg);
     }
@@ -52,6 +56,8 @@ public class Connection implements IConnection{
 
     final private String IP;
     final private int PORT;
+    final private String ROLE_ID;
+    final private String EXTENSION_NAME;
     final private HandleReadingMessage handle;
     private DataTransferPair dataTransferPair = null;
 }
