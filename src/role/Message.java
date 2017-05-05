@@ -20,8 +20,9 @@ public class Message {
      * And also, please use new stream in the message.
      * @param length The length of the data.
      * @param in The InputStream of all the data.
+     * @throws IOException if the InputStream is unexpectedly closed or other I/O error happened.
      */
-    public Message(BigInteger length, InputStream in) throws IOException{
+    public Message(BigInteger length, InputStream in) throws IOException {
         this.length = length;
         int b;
         PipedInputStream inStream = new PipedInputStream();
@@ -32,8 +33,26 @@ public class Message {
             for (BigInteger i = new BigInteger("0"); i.compareTo(this.length) < 0; i = i.add(new BigInteger("1"))) {
                 b = in.read();
                 out.write(b);
-                out.flush();
             }
+            out.flush();
+        }
+        this.inStream = inStream;
+    }
+
+    /**
+     * Constructor. Use a string to build a message.
+     * @param content The string to use to create a message.
+     * @throws IOException if an I/O error happened.
+     */
+    public Message(String content) throws IOException {
+        length = new BigInteger(String.valueOf(content.length()));
+        PipedInputStream inStream = new PipedInputStream();
+        try (PipedOutputStream out = new PipedOutputStream()) {
+            inStream.connect(out);
+            for (int i = 0; i < content.length(); ++i) {
+                out.write(content.charAt(i));
+            }
+            out.flush();
         }
         this.inStream = inStream;
     }
@@ -42,7 +61,7 @@ public class Message {
      * Close this message's InputStream when it's not to be used.
      * This method should be called if the message is no longer to be used.
      */
-    public void dispose() throws IOException{
+    public void dispose() throws IOException {
         if (inStream != null)
         {
             inStream.close();
