@@ -1,6 +1,7 @@
 package role.connection.datatransfer;
 
 import role.Message;
+import role.connection.IConnection;
 import role.connection.datatransfer.socket.socketclient.HandleReadingMessage;
 import role.connection.datatransfer.socket.socketclient.SocketReadThread;
 import role.connection.datatransfer.socket.socketclient.SocketWriteThread;
@@ -16,7 +17,7 @@ import java.io.IOException;
  * and it has a write() method to write messages to the remote.
  * In the end, it need to be closed.
  */
-public class DataTransferPair {
+public class DataTransferPair implements IConnection{
 
     /**
      * Constructor.
