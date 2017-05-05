@@ -26,6 +26,12 @@ public class Connection implements IConnection{
         this.handle = handle;
     }
 
+    /**
+     * Write messages to the remote.
+     * If the real connection has not been set up, this work will be done before writing messages.
+     * @param msg An instance of Message. It contains the message to be written.
+     * @throws IOException if setting up real connection failed.
+     */
     public boolean write(Message msg) throws IOException{
         if (dataTransferPair == null) {
             dataTransferPair = new DataTransferPair(IP, PORT, handle);
@@ -33,6 +39,9 @@ public class Connection implements IConnection{
         return dataTransferPair.write(msg);
     }
 
+    /**
+     * Closing the connection.
+     */
     public void close() {
         if (dataTransferPair != null) {
             dataTransferPair.close();
