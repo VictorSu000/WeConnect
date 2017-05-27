@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.math.BigInteger;
+import java.net.Socket;
 
 /**
  * Created by Victor on 2017/4/30.<br>
@@ -27,6 +28,8 @@ class SocketClientRead extends SocketClient implements SocketReadable{
         lengthStr = new StringBuilder();
         // Read the length of the message. The length is transferred in the beginning of the message as string,
         // and it ends with the char '-'
+        // Here c must be char. If c is int, lengthStr.append(c) will not regard c as a char.
+        // For example, if c = 12, lengthStr will append "12".
         char c;
         while ((c = (char) inStream.read()) != '-') {
             // Because '0' to '9' in ascii is 48 to 57 and '-' is 45, they can all be put into one byte.
@@ -70,14 +73,24 @@ class SocketClientRead extends SocketClient implements SocketReadable{
 
     /**
      * Constructor.
-     *
      * @param ip   The ip address to be connected.
      * @param port The port to be connected.
-     * @param role_id The id of the current client.
+     * @param me_id The id of the current client.
      * @param extension_name The name of the extension which created this socket.
      * @param pair_hash The hash id of socket pair. Use pair_hash to identify it from other pairs of sockets.
      */
-    SocketClientRead(String ip, int port, String role_id, String extension_name, int pair_hash) {
-        super(ip, port, role_id, "r", extension_name, pair_hash);
+    SocketClientRead(String ip, int port, String me_id, String extension_name, int pair_hash) {
+        super(ip, port, me_id, SocketType.READ, extension_name, pair_hash);
+    }
+
+    /**
+     * Constructor.
+     * @param socket The existing socket.
+     * @param me_id The id of the current client.
+     * @param extension_name The name of the extension which created this socket.
+     * @param pair_hash The hash id of socket pair. Use pair_hash to identify it from other pairs of sockets.
+     */
+    SocketClientRead(Socket socket, String me_id, String extension_name, int pair_hash) {
+        super(socket, me_id, SocketType.READ, extension_name, pair_hash);
     }
 }

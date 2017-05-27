@@ -2,6 +2,7 @@ package role.connection.datatransfer.socket.socketclient;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.Socket;
 
 /**
  * Created by Victor on 2017/5/1.<br>
@@ -49,11 +50,22 @@ class SocketClientWrite extends SocketClient implements SocketWritable {
      *
      * @param ip   The ip address to be connected.
      * @param port The port to be connected.
-     * @param role_id The id of the current client.
+     * @param me_id The id of the current client.
      * @param extension_name The name of the extension which created this socket.
      * @param pair_hash The hash id of socket pair. Use pair_hash to identify it from other pairs of sockets.
      */
-    SocketClientWrite(String ip, int port, String role_id, String extension_name, int pair_hash) {
-        super(ip, port, role_id, "w", extension_name, pair_hash);
+    SocketClientWrite(String ip, int port, String me_id, String extension_name, int pair_hash) {
+        super(ip, port, me_id, SocketType.WRITE, extension_name, pair_hash);
+    }
+
+    /**
+     * Constructor.
+     * @param socket The existing socket.
+     * @param me_id The id of the current client.
+     * @param extension_name The name of the extension which created this socket.
+     * @param pair_hash The hash id of socket pair. Use pair_hash to identify it from other pairs of sockets.
+     */
+    SocketClientWrite(Socket socket, String me_id, String extension_name, int pair_hash) {
+        super(socket, me_id, SocketType.WRITE, extension_name, pair_hash);
     }
 }

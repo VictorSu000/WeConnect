@@ -53,18 +53,43 @@ abstract class SocketClient {
      * Constructor.
      * @param ip The ip address to be connected.
      * @param port The port to be connected.
-     * @param role_id The id of the current client.
+     * @param me_id The id of the current client.
      * @param socketType The socketType ("read" or "write")
      * @param extension_name The name of the extension which created this socket.
      * @param pair_hash The hash id of socket pair. Use pair_hash to identify it from other pairs of sockets.
      */
-    SocketClient(String ip, int port, String role_id, String socketType, String extension_name, int pair_hash) {
+    SocketClient(String ip, int port, String me_id, int socketType, String extension_name, int pair_hash) {
         IP = ip;
         PORT = port;
-        ROLE_ID = role_id;
+        ME_ID = me_id;
         SOCKET_TYPE = socketType;
         EXTENSION_NAME = extension_name;
         PAIR_HASH = pair_hash;
+    }
+
+    /**
+     * Construct a SocketClient using a socket which already exists. It's usually used in a server.
+     * @param socket The existing socket.
+     * @param me_id The id of the current client.
+     * @param socketType The socketType ("read" or "write")
+     * @param extension_name The name of the extension which created this socket.
+     * @param pair_hash The hash id of socket pair. Use pair_hash to identify it from other pairs of sockets.
+     */
+    SocketClient(Socket socket, String me_id, int socketType, String extension_name, int pair_hash) {
+        IP = socket.getInetAddress().getHostAddress();
+        PORT = socket.getPort();
+        ME_ID = me_id;
+        SOCKET_TYPE = socketType;
+        EXTENSION_NAME = extension_name;
+        PAIR_HASH = pair_hash;
+        this.socket = socket;
+        try {
+            inStream = new BufferedInputStream(socket.getInputStream());
+            outStream = new BufferedOutputStream(socket.getOutputStream());
+        } catch (IOException e) {
+            e.printStackTrace();
+            // TODO: throw it.
+        }
     }
 
     /**
@@ -74,15 +99,16 @@ abstract class SocketClient {
      */
     private boolean checkConnection() throws IOException {
         final int CONNECT_OK = 1;
-        outStream.write((ROLE_ID + "|" + EXTENSION_NAME + "|" + PAIR_HASH + "|" + SOCKET_TYPE).getBytes());
+        // use "|" to divide each part, use "@" to specify a stopping signal.
+        outStream.write((ME_ID + "|" + EXTENSION_NAME + "|" + PAIR_HASH + "|" + SOCKET_TYPE + "@").getBytes());
         outStream.flush();
         return inStream.read() == CONNECT_OK;
     }
 
     final private String IP;
     final private int PORT;
-    final private String ROLE_ID;
-    final private String SOCKET_TYPE;
+    final private String ME_ID;
+    final private int SOCKET_TYPE;
     final private String EXTENSION_NAME;
     final private int PAIR_HASH;
     private Socket socket;

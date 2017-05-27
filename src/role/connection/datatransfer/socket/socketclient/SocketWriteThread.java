@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.math.BigInteger;
+import java.net.Socket;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -23,18 +24,30 @@ public class SocketWriteThread implements Runnable {
      * Constructor. The instance of this class will automatically manage the socket.
      * @param ip The ip address to be connected.
      * @param port The port to be connected.
-     * @param role_id The id of the current client.
+     * @param me_id The id of the current client.
      * @param extension_name The name of the extension which created this socket.
      * @param pair_hash The hash id of socket pair. Use pair_hash to identify it from other pairs of sockets
      * @throws IOException if Socket can't be established or socket is established but transferring data failed.
      */
-    public SocketWriteThread(String ip, int port, String role_id, String extension_name, int pair_hash)
+    public SocketWriteThread(String ip, int port, String me_id, String extension_name, int pair_hash)
             throws IOException{
-        socketWrite = new SocketClientWrite(ip, port, role_id, extension_name, pair_hash);
+        socketWrite = new SocketClientWrite(ip, port, me_id, extension_name, pair_hash);
         if (!socketWrite.connect()) {
             socketWrite.close();
             throw new IOException("Socket establishing failed.");
         }
+        running = true;
+    }
+
+    /**
+     * Constructor. The instance of this class will automatically manage the socket.
+     * @param socket The existing socket.
+     * @param me_id The id of the current client.
+     * @param extension_name The name of the extension which created this socket.
+     * @param pair_hash The hash id of socket pair. Use pair_hash to identify it from other pairs of sockets.
+     */
+    public SocketWriteThread(Socket socket, String me_id, String extension_name, int pair_hash) {
+        socketWrite = new SocketClientWrite(socket, me_id, extension_name, pair_hash);
         running = true;
     }
 

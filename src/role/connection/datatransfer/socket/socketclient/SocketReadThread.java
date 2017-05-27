@@ -6,6 +6,7 @@ import role.connection.HandleReadingMessage;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.math.BigInteger;
+import java.net.Socket;
 
 /**
  * Created by Victor on 2017/4/30.<br>
@@ -21,18 +22,32 @@ public class SocketReadThread implements Runnable{
      * @param ip The ip address to be connected.
      * @param port The port to be connected.
      * @param handle Specify how to handle the message received.
-     * @param role_id The id of the current client.
+     * @param me_id The id of the current client.
      * @param extension_name The name of the extension which created this socket.
      * @param pair_hash The hash id of socket pair. Use pair_hash to identify it from other pairs of sockets.
      * @throws IOException if Socket can't be established or socket is established but transferring data failed.
      */
     public SocketReadThread(String ip, int port, HandleReadingMessage handle,
-                            String role_id, String extension_name, int pair_hash) throws IOException{
-        socketRead = new SocketClientRead(ip, port, role_id, extension_name, pair_hash);
+                            String me_id, String extension_name, int pair_hash) throws IOException {
+        socketRead = new SocketClientRead(ip, port, me_id, extension_name, pair_hash);
         if (!socketRead.connect()) {
             socketRead.close();
             throw new IOException("Socket establishing failed.");
         }
+        this.handle = handle;
+        running = true;
+    }
+
+    /**
+     * Constructor. The instance of this class will automatically manage the socket.
+     * @param socket The existing socket.
+     * @param handle Specify how to handle the message received.
+     * @param me_id The id of the current client.
+     * @param extension_name The name of the extension which created this socket.
+     * @param pair_hash The hash id of socket pair. Use pair_hash to identify it from other pairs of sockets.
+     */
+    public SocketReadThread(Socket socket, HandleReadingMessage handle, String me_id, String extension_name, int pair_hash) {
+        socketRead = new SocketClientRead(socket, me_id, extension_name, pair_hash);
         this.handle = handle;
         running = true;
     }
