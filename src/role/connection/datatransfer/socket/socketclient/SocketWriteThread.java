@@ -59,7 +59,12 @@ public class SocketWriteThread implements Runnable {
      * @return true if successfully add the message to message queue, false if fail to do so.
      */
     synchronized public boolean setMessageToWrite(Message messageToWrite) {
-        return messageToWriteQueue.offer(messageToWrite);
+        boolean status;
+        synchronized (messageToWriteQueue) {
+            status = messageToWriteQueue.offer(messageToWrite);
+            messageToWriteQueue.notifyAll();
+        }
+        return status;
     }
 
     /**
@@ -72,24 +77,26 @@ public class SocketWriteThread implements Runnable {
         while (running) {
             // use beginWriting to control the time to write message to the remote
             boolean msgQueueEmpty;
-            synchronized (this) {
-                msgQueueEmpty = messageToWriteQueue.isEmpty();
-            }
-            // use while to make sure before checking stopSignal, all the messages have been sent.
-            while (!msgQueueEmpty) {
-                Message msg;
-                synchronized (this){
+            synchronized (messageToWriteQueue) {
+                while (messageToWriteQueue.isEmpty() && !stopSignal) {
+                    // wait till the messageToWriteQueue is not empty or it's time to stop.
+                    try {
+                        messageToWriteQueue.wait();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                // use while to make sure before checking stopSignal, all the messages have been sent.
+                while (!messageToWriteQueue.isEmpty()) {
+                    Message msg;
                     msg = messageToWriteQueue.poll();
-                }
-                write(msg);
-                try {
-                    msg.dispose();
-                } catch (IOException e) {
-                    System.out.println("Disposing message failed. An I/O error happened.");
-                    e.printStackTrace();
-                }
-                synchronized (this) {
-                    msgQueueEmpty = messageToWriteQueue.isEmpty();
+                    write(msg);
+                    try {
+                        msg.dispose();
+                    } catch (IOException e) {
+                        System.out.println("Disposing message failed. An I/O error happened.");
+                        e.printStackTrace();
+                    }
                 }
             }
             if (stopSignal) {
@@ -114,6 +121,8 @@ public class SocketWriteThread implements Runnable {
         // another thread. And also, in this way real stopping will be delayed till everything is finished.
         // Real stopping work is done in THIS thread itself (SocketWriteThread) in run() method.
         stopSignal = true;
+        // wake up the socket that is waiting for the messageToWriteQueue to be not empty.
+        messageToWriteQueue.notifyAll();
     }
 
     /**
